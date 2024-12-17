@@ -1,0 +1,51 @@
+networks:
+  haproxy1:
+    driver: bridge
+  haproxy2:
+    driver: bridge
+
+services:
+  haproxy1:
+    image: haproxy
+    ports:
+      - 80:80
+    volumes:
+      - ./haproxy-1/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      - haproxy1
+      - haproxy2
+    depends_on:
+      - nginx1
+      - nginx2
+      - nginx3
+
+  nginx1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx-1/index.html:/usr/share/nginx/html/index.html
+    networks:
+      - haproxy1
+      - haproxy2
+
+  nginx2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx-2/index.html:/usr/share/nginx/html/index.html
+    networks:
+      - haproxy1
+      - haproxy2
+
+  nginx3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx-3/index.html:/usr/share/nginx/html/index.html
+    networks:
+      - haproxy1
+      - haproxy2      
+    
