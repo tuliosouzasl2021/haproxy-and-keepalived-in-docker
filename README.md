@@ -14,66 +14,119 @@ Este repositório fornece uma configuração prática de HAProxy e Keepalived ut
 ## 🌐 **Estrutura do Projeto**
 
 ```
-├── docker-compose.yml
-├── haproxy
-│   └── haproxy.cfg
-└── keepalived
-    └── keepalived.conf
+├── Haproxy-1
+|   └── haproxy.cfg 
+├── Haproxy-2
+|   └── haproxy.cfg
+├── nginx-1
+|   └── index.html
+├── nginx-2
+|   └── index.html
+├── nginx-3
+|   └── index.html
+├── compose.yml
+├── Dockerfile
 ```
 
 **Explicação:**
-- **docker-compose.yml**: Arquivo de orquestração dos containers HAProxy e Keepalived.
-- **haproxy/haproxy.cfg**: Arquivo de configuração do HAProxy.
+- **compose.yml**: Arquivo de orquestração dos containers HAProxy e Keepalived.
+- **Haproxy-1[2]/haproxy.cfg**: Arquivo de configuração do HAProxy.
 - **keepalived/keepalived.conf**: Arquivo de configuração do Keepalived.
 
 ---
 
 ## 📌 **Configuração dos Arquivos**
 
-### **docker-compose.yml**
+### **compose.yml**
 ```yaml
-docker-compose.yml
-version: '3'
-services:
-  haproxy:
-    image: haproxy:latest
-    container_name: haproxy
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-    networks:
-      - ha-network
-
-  keepalived:
-    image: osixia/keepalived:latest
-    container_name: keepalived
-    restart: always
-    privileged: true
-    network_mode: "host"
-    volumes:
-      - ./keepalived/keepalived.conf:/container/service/keepalived/assets/keepalived.conf:ro
-
 networks:
-  ha-network:
+  haproxy1:
     driver: bridge
+  haproxy2:
+    driver: bridge
+
+services:
+  haproxy1:
+    image: haproxy
+    ports:
+      - 80:80
+    volumes:
+      - ./haproxy-1/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      - haproxy1
+      - haproxy2
+    depends_on:
+      - nginx1
+      - nginx2
+      - nginx3
+
+  nginx1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx-1/index.html:/usr/share/nginx/html/index.html
+    networks:
+      - haproxy1
+      - haproxy2
+
+  nginx2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx-2/index.html:/usr/share/nginx/html/index.html
+    networks:
+      - haproxy1
+      - haproxy2
+
+  nginx3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx-3/index.html:/usr/share/nginx/html/index.html
+    networks:
+      - haproxy1
+      - haproxy2      
 ```
 
 ---
 
 ### **haproxy/haproxy.cfg**
 ```haproxy
-# Configuração básica do HAProxy
-frontend http-in
-    bind *:80
-    default_backend servers
+global
+        log stdout format raw local0
+        daemon
+        maxconn 256
+defaults 
+        log global
+        option httplog
+        option dontlognull
+        timeout queue       1m
+        timeout connect     10s
+        timeout client      1m
+        timeout server      1m
+        timeout check       10s
+        maxconn             3000
+        mode http
 
-backend servers
-    balance roundrobin
-    server server1 192.168.0.101:80 check
-    server server2 192.168.0.102:80 check
+frontend front-nginxes
+        bind *:80
+        option forwardfor
+        mode http
+        default_backend back-nginxes
+
+backend back-nginxes
+        server s1 nginx1:80
+        server s2 nginx2:80
+        server s3 nginx3:80
+
+listen listen-nginxes
+        bind *:81
+        server s1 localhost:80
+
+
 ```
 
 **Explicação:**
