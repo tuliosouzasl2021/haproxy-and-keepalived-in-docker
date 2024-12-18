@@ -26,6 +26,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./nginx-1/index.html:/usr/share/nginx/html/index.html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./default.conf:/etc/nginx/conf.d/default.conf
     networks:
       - haproxy1
       - haproxy2
@@ -35,7 +37,9 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./nginx-2/index.html:/usr/share/nginx/html/index.html
+      - ./nginx-1/index.html:/usr/share/nginx/html/index.html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./default.conf:/etc/nginx/conf.d/default.conf
     networks:
       - haproxy1
       - haproxy2
@@ -45,7 +49,9 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./nginx-3/index.html:/usr/share/nginx/html/index.html
+      - ./nginx-1/index.html:/usr/share/nginx/html/index.html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./default.conf:/etc/nginx/conf.d/default.conf
     networks:
       - haproxy1
       - haproxy2      
