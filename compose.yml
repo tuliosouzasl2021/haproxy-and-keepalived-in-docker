@@ -8,9 +8,9 @@ services:
   haproxy1:
     image: haproxy
     ports:
-      - 80:80
-      - 22:22110
-      - 81:81
+      - "80:80"
+      - "22:22110"
+      - "81:81"
     volumes:
       - ./haproxy-1/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     networks:
