@@ -11,6 +11,7 @@ services:
       - "80:80"
       - "22:22110"
       - "81:81"
+      - "8080:8080"
     volumes:
       - ./haproxy-1/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     networks:
