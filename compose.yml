@@ -13,8 +13,10 @@ services:
       - "81:81"
       - "8080:8080"
       - "8500:8500"
+      - "443:443"
     volumes:
       - ./haproxy-1/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+      - ./certs:/usr/local/etc/haproxy/certs
     networks:
       - haproxy1
       - haproxy2
